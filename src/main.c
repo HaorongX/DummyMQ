@@ -24,46 +24,60 @@ int setup_listenfd(uint16_t port)
     return fd;
 }
 
+static char *data = NULL;
+void serve_producer(int clientfd)
+{
+    struct bst str;
+    read_bst(clientfd, &str);
+    free(data);
+    data = str.str;
+}
+
+void serve_consumer(int clientfd)
+{
+    struct bst tmp;
+    if(data != NULL)
+    {
+        tmp.length = strlen(data);
+        tmp.str = data;
+        write_bst(clientfd, &tmp);
+        free(data);
+        data = NULL;
+    }
+    else 
+    {
+        tmp.length = strlen("NULL");
+        tmp.str = "NULL";
+        write_bst(clientfd, &tmp);
+    }
+}
+
+void serve_client(int clientfd)
+{
+    static char *data = NULL;
+    struct bst str;
+
+    read_bst(clientfd, &str);
+    
+    if(!strcmp(str.str, "PRO"))
+        serve_producer(clientfd);
+    else if(!strcmp(str.str, "CON"))
+        serve_consumer(clientfd);
+    else
+        err_sys("Connected to a unknown client", __FILE__, __LINE__);
+    
+    close(clientfd);
+}
+
 int
 main(int argc, char **argv)
 {
     int listenfd = setup_listenfd(8000), clientfd;
 
-    struct bst str, tmp;
-    char *data = NULL;
     while(true)
     {
         clientfd = _accept(listenfd, (struct sockaddr*) NULL, 0);
-        
-        read_bst(clientfd, &str);
-        printf("%s\n", str.str);
-        if(!strcmp(str.str, "PRO"))
-        {
-            free(data);
-            data = str.str;
-        }
-        else if(!strcmp(str.str, "CON"))
-        {
-            if(data != NULL)
-            {
-                tmp.length = strlen(data);
-                tmp.str = data;
-                write_bst(clientfd, &tmp);
-                free(data);
-                data = NULL;
-            }
-            else 
-            {
-                tmp.length = strlen("NULL");
-                tmp.str = "NULL";
-                write_bst(clientfd, &tmp);
-            }
-        }
-        else
-        {
-            printf("to a unknown client!\n");
-        }
-        close(clientfd);
+        serve_client(clientfd);    
     }
     free(data);
     return 0;
