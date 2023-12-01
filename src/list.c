@@ -21,13 +21,13 @@ struct lnode *append(struct blist *l, void *data) {
 	return n;
 }
 struct lnode *pop(struct blist *l) {
-	struct lnode *t = l->end;
+	struct lnode *t = l->head;
 	if (l->head == l->end) {
 		l->head = l->end = NULL;
 		return t;
 	}
-	t->prev->next = NULL;
-	l->end = t->prev;
+	t->next->prev = NULL;
+	l->head = t->next;
 	return t;
 }
 bool empty(const struct blist *l)
@@ -42,4 +42,5 @@ void clean(struct blist *l)
         s = t->next;
         free(t);
     }
+    l->head = l->end = NULL;
 }
