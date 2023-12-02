@@ -6,6 +6,6 @@ OBJS = $(SRCS:.c=.o)
 all: $(OBJS)
 .c.o:
 	$(CC) -g -I $(HDIR) $(HEADERS) $< -o $@
- 
+
 check:
-	for obj in $(OBJS); do $(HDIR)/test/$$obj; done;
+	for obj in $(OBJS); do ./$$obj; done;
