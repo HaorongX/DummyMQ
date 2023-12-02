@@ -1,3 +1,4 @@
+#include "list.h"
 #include "socket_wrapped.h"
 #include "type.h"
 #include <stdarg.h>
@@ -7,8 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int setup_listenfd(uint16_t port);
-
+// TODO: need to make it irrelevant to proctocol(using getaddr)
 int setup_listenfd(uint16_t port) {
 	int fd;
 	struct sockaddr_in serv_addr;
@@ -23,22 +23,21 @@ int setup_listenfd(uint16_t port) {
 	return fd;
 }
 
-static char *data = NULL;
-void serve_producer(int clientfd) {
+void serve_producer(int clientfd, struct blist *q) {
 	struct bst str;
 	read_bst(clientfd, &str);
-	free(data);
-	data = str.str;
+	append(q, (void *)str.str);
 }
 
-void serve_consumer(int clientfd) {
+void serve_consumer(int clientfd, struct blist *q) {
 	struct bst tmp;
-	if (data != NULL) {
-		tmp.length = strlen(data);
-		tmp.str = data;
+	if (!empty(q)) {
+		struct lnode *n = pop(q);
+		tmp.length = strlen((char *)n->data);
+		tmp.str = (char *)n->data;
 		write_bst(clientfd, &tmp);
-		free(data);
-		data = NULL;
+		free(n->data);
+		free(n);
 	} else {
 		tmp.length = strlen("NULL");
 		tmp.str = "NULL";
@@ -46,16 +45,16 @@ void serve_consumer(int clientfd) {
 	}
 }
 
-void serve_client(int clientfd) {
+void serve_client(int clientfd, struct blist *q) {
 	static char *data = NULL;
 	struct bst str;
 
 	read_bst(clientfd, &str);
 
 	if (!strcmp(str.str, "PRO"))
-		serve_producer(clientfd);
+		serve_producer(clientfd, q);
 	else if (!strcmp(str.str, "CON"))
-		serve_consumer(clientfd);
+		serve_consumer(clientfd, q);
 	else
 		err_sys("Connected to a unknown client", __FILE__, __LINE__);
 
@@ -65,10 +64,13 @@ void serve_client(int clientfd) {
 int main(int argc, char **argv) {
 	int listenfd = setup_listenfd(8000), clientfd;
 
+	struct blist *queue = create_list();
 	while (true) {
 		clientfd = _accept(listenfd, (struct sockaddr *)NULL, 0);
-		serve_client(clientfd);
+		serve_client(clientfd, queue);
 	}
-	free(data);
+
+	clean(queue);
+	free(queue);
 	return 0;
 }
