@@ -2,6 +2,7 @@ Open:
   - Add log system
   - Add multiple queues
   - Add different types support
+  - Add basic documents
   - Add multiple processes model @started(23-12-02 12:35)
 Archive:
   ✔ Add a queue @started(23-12-02 12:09) @done(23-12-02 12:32) @lasted(23m3s)
