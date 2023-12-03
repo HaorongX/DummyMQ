@@ -9,11 +9,13 @@ THIS PRODUCER IS FOR TEST PURPOSE ONLY!!!
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 
 int main(int argc, char **argv) {
 	int listenfd;
 	struct sockaddr_in serv_addr;
+	srand(clock());
 
 	listenfd = _socket(AF_INET, SOCK_STREAM, 0);
 
@@ -25,8 +27,10 @@ int main(int argc, char **argv) {
 
 	struct bst b = {3, "PRO"};
 	write_bst(listenfd, &b);
-	b.length = strlen("test");
-	b.str = "test";
+	int t = rand();
+	b.length = snprintf(NULL, 0, "%d", t);
+	b.str = (char *)malloc((b.length + 1) * sizeof(char));
+	sprintf(b.str, "%d", t);
 	write_bst(listenfd, &b);
 
 	printf("%s\n", b.str);

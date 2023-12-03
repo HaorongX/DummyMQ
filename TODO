@@ -3,7 +3,7 @@ Open:
   - Add multiple queues
   - Add different types support
   - Add basic documents
-  - Add multiple processes model @started(23-12-02 12:35)
 Archive:
+  ✔ Add multiple threads model @started(23-12-02 12:35) @done(23-12-03 11:49) @lasted(23h14m2s) @project(Open)
   ✔ Add a queue @started(23-12-02 12:09) @done(23-12-02 12:32) @lasted(23m3s)
   ✔ Add unit test for bst @started(23-11-25 13:13) @done(23-11-26 10:05) @lasted(20h52m2s)
