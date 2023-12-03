@@ -7,7 +7,7 @@
 ### Features
 - Lightweight: Just some C code, less than 7 kb.
 
-- Speed: Send/receive 10000+ messages per second on an average machine. 
+- Speed: Send/receive 5000+ messages/s(on an old laptop)
 
 - Easy to setup: All you need to do its run `git fetch` & `make`
 
