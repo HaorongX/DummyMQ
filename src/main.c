@@ -1,9 +1,9 @@
 #include "list.h"
 #include "socket_wrapped.h"
 #include "type.h"
-#include <semaphore.h>
 #include <netdb.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -29,20 +29,30 @@ int setup_listenfd(uint16_t port) {
 	return fd;
 }
 
+void push_q(const struct bst *s, struct blist *q) {
+	sem_wait(&mutex);
+	append(q, (void *)s->str);
+	sem_post(&mutex);
+}
+
+struct lnode *pop_q(struct blist *q) {
+	struct lnode *n;
+	sem_wait(&mutex);
+	n = pop(queue);
+	sem_post(&mutex);
+	return n;
+}
+
 void serve_producer(int clientfd) {
 	struct bst str;
 	read_bst(clientfd, &str);
-	sem_wait(&mutex);
-	append(queue, (void *)str.str);
-	sem_post(&mutex);
+	push_q(&str, queue);
 }
 
 void serve_consumer(int clientfd) {
 	struct bst tmp;
 	if (!empty(queue)) {
-		sem_wait(&mutex);
-		struct lnode *n = pop(queue);
-		sem_post(&mutex);
+		struct lnode *n = pop_q(queue);
 		tmp.length = strlen((char *)n->data);
 		tmp.str = (char *)n->data;
 		write_bst(clientfd, &tmp);
